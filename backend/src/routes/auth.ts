@@ -82,8 +82,8 @@ router.post('/register', async (req: Request, res: Response, next: NextFunction)
                 email: result.user.email,
                 tenantId: result.tenant.id,
             },
-            process.env.JWT_SECRET!,
-            { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+            process.env.JWT_SECRET as string,
+            { expiresIn: '7d' }
         );
 
         res.status(201).json({
@@ -155,8 +155,8 @@ router.post('/login', async (req: Request, res: Response, next: NextFunction) =>
                 email: user.email,
                 tenantId: user.tenantId,
             },
-            process.env.JWT_SECRET!,
-            { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
+            process.env.JWT_SECRET as string,
+            { expiresIn: '7d' }
         );
 
         res.json({

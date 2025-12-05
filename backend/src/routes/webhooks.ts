@@ -9,7 +9,7 @@ function verifyWebhookSignature(body: Buffer, signature: string, secret: string)
     const hmac = crypto.createHmac('sha256', secret);
     hmac.update(body);
     const calculatedSignature = `sha256=${hmac.digest('base64')}`;
-    return crypto.timingSafeEquals(
+    return crypto.timingSafeEqual(
         Buffer.from(signature),
         Buffer.from(calculatedSignature)
     );
