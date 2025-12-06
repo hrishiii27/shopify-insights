@@ -188,7 +188,9 @@ export default function CustomersPage() {
                                         </td>
                                         <td>
                                             <div>
-                                                <div style={{ fontWeight: '500' }}>{customer.name}</div>
+                                                <div style={{ fontWeight: '500' }}>
+                                                    {customer.name !== 'Unknown' ? customer.name : 'Anonymous Customer'}
+                                                </div>
                                                 <div style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>
                                                     {customer.email || 'No email'}
                                                 </div>

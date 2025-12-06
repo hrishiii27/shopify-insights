@@ -98,18 +98,37 @@ async function syncOrders(tenantId: string, config: ShopifyConfig): Promise<numb
     const orders = response.orders || [];
 
     for (const order of orders) {
-        // Find customer if exists
+        // Create or update customer from order data
         let customerId: string | null = null;
         if (order.customer?.id) {
-            const customer = await prisma.customer.findUnique({
+            // Upsert customer with data from the order
+            const customerData = order.customer;
+            const upsertedCustomer = await prisma.customer.upsert({
                 where: {
                     tenantId_shopifyId: {
                         tenantId,
-                        shopifyId: String(order.customer.id),
+                        shopifyId: String(customerData.id),
                     },
                 },
+                update: {
+                    email: customerData.email || undefined,
+                    firstName: customerData.first_name || customerData.default_address?.first_name || undefined,
+                    lastName: customerData.last_name || customerData.default_address?.last_name || undefined,
+                    phone: customerData.phone || customerData.default_address?.phone || undefined,
+                    updatedAt: new Date(),
+                },
+                create: {
+                    tenantId,
+                    shopifyId: String(customerData.id),
+                    email: customerData.email,
+                    firstName: customerData.first_name || customerData.default_address?.first_name,
+                    lastName: customerData.last_name || customerData.default_address?.last_name,
+                    phone: customerData.phone || customerData.default_address?.phone,
+                    totalSpent: 0,
+                    ordersCount: 0,
+                },
             });
-            customerId = customer?.id || null;
+            customerId = upsertedCustomer.id;
         }
 
         const savedOrder = await prisma.order.upsert({

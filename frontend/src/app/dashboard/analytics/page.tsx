@@ -72,11 +72,14 @@ export default function AnalyticsPage() {
                 api.getRevenueForecast(),
             ]);
 
-            setSegments(rfmData.segments);
-            setTotalCustomers(rfmData.totalCustomers);
-            setForecastData(forecast);
+            setSegments(rfmData?.segments || []);
+            setTotalCustomers(rfmData?.totalCustomers || 0);
+            setForecastData(forecast || null);
         } catch (error) {
             console.error('Failed to load analytics:', error);
+            setSegments([]);
+            setTotalCustomers(0);
+            setForecastData(null);
         } finally {
             setIsLoading(false);
         }
@@ -132,7 +135,7 @@ export default function AnalyticsPage() {
                             <div style={{ textAlign: 'right' }}>
                                 <p style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>Trend</p>
                                 <span className={`badge ${forecastData.trend === 'growing' ? 'badge-success' :
-                                        forecastData.trend === 'declining' ? 'badge-error' : 'badge-info'
+                                    forecastData.trend === 'declining' ? 'badge-error' : 'badge-info'
                                     }`} style={{ textTransform: 'capitalize' }}>
                                     {forecastData.trend === 'growing' ? '📈' : forecastData.trend === 'declining' ? '📉' : '➡️'} {forecastData.trend}
                                 </span>
@@ -245,63 +248,77 @@ export default function AnalyticsPage() {
                     {/* Segment Distribution */}
                     <div>
                         <h4 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '16px' }}>Segment Distribution</h4>
-                        <div className="flex flex-col gap-sm">
-                            {segments.map((segment) => (
-                                <div
-                                    key={segment.segment}
-                                    onClick={() => setSelectedSegment(selectedSegment?.segment === segment.segment ? null : segment)}
-                                    style={{
-                                        padding: '12px 16px',
-                                        background: selectedSegment?.segment === segment.segment
-                                            ? 'rgba(99, 102, 241, 0.15)'
-                                            : 'rgba(255, 255, 255, 0.02)',
-                                        border: `1px solid ${selectedSegment?.segment === segment.segment ? 'var(--color-accent-primary)' : 'var(--border-color)'}`,
-                                        borderRadius: '10px',
-                                        cursor: 'pointer',
-                                        transition: 'all 0.2s ease'
-                                    }}
-                                >
-                                    <div className="flex justify-between items-center">
-                                        <div className="flex items-center gap-md">
-                                            <div style={{
-                                                width: '12px',
-                                                height: '12px',
-                                                borderRadius: '50%',
-                                                background: SEGMENT_COLORS[segment.segment] || '#6b7280'
-                                            }}></div>
-                                            <div>
-                                                <p style={{ fontWeight: '500' }}>{segment.segment}</p>
+                        {segments.length === 0 ? (
+                            <div style={{
+                                padding: '48px',
+                                textAlign: 'center',
+                                color: 'var(--color-text-muted)',
+                                border: '2px dashed var(--border-color)',
+                                borderRadius: '12px'
+                            }}>
+                                <p style={{ fontSize: '24px', marginBottom: '8px' }}>📊</p>
+                                <p>No customer data yet</p>
+                                <p style={{ fontSize: '12px', marginTop: '8px' }}>Sync your Shopify data to see RFM segments</p>
+                            </div>
+                        ) : (
+                            <div className="flex flex-col gap-sm">
+                                {segments.map((segment) => (
+                                    <div
+                                        key={segment.segment}
+                                        onClick={() => setSelectedSegment(selectedSegment?.segment === segment.segment ? null : segment)}
+                                        style={{
+                                            padding: '12px 16px',
+                                            background: selectedSegment?.segment === segment.segment
+                                                ? 'rgba(99, 102, 241, 0.15)'
+                                                : 'rgba(255, 255, 255, 0.02)',
+                                            border: `1px solid ${selectedSegment?.segment === segment.segment ? 'var(--color-accent-primary)' : 'var(--border-color)'}`,
+                                            borderRadius: '10px',
+                                            cursor: 'pointer',
+                                            transition: 'all 0.2s ease'
+                                        }}
+                                    >
+                                        <div className="flex justify-between items-center">
+                                            <div className="flex items-center gap-md">
+                                                <div style={{
+                                                    width: '12px',
+                                                    height: '12px',
+                                                    borderRadius: '50%',
+                                                    background: SEGMENT_COLORS[segment.segment] || '#6b7280'
+                                                }}></div>
+                                                <div>
+                                                    <p style={{ fontWeight: '500' }}>{segment.segment}</p>
+                                                    <p style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>
+                                                        {SEGMENT_DESCRIPTIONS[segment.segment]}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div style={{ textAlign: 'right' }}>
+                                                <p style={{ fontWeight: '600' }}>{segment.count}</p>
                                                 <p style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>
-                                                    {SEGMENT_DESCRIPTIONS[segment.segment]}
+                                                    {totalCustomers > 0 ? ((segment.count / totalCustomers) * 100).toFixed(1) : 0}%
                                                 </p>
                                             </div>
                                         </div>
-                                        <div style={{ textAlign: 'right' }}>
-                                            <p style={{ fontWeight: '600' }}>{segment.count}</p>
-                                            <p style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>
-                                                {((segment.count / totalCustomers) * 100).toFixed(1)}%
-                                            </p>
+
+                                        {/* Progress bar */}
+                                        <div style={{
+                                            marginTop: '12px',
+                                            height: '6px',
+                                            background: 'rgba(255,255,255,0.1)',
+                                            borderRadius: '3px',
+                                            overflow: 'hidden'
+                                        }}>
+                                            <div style={{
+                                                width: `${totalCustomers > 0 ? Math.min((segment.count / totalCustomers) * 100 * 2, 100) : 0}%`,
+                                                height: '100%',
+                                                background: SEGMENT_COLORS[segment.segment] || '#6b7280',
+                                                transition: 'width 0.5s ease'
+                                            }}></div>
                                         </div>
                                     </div>
-
-                                    {/* Progress bar */}
-                                    <div style={{
-                                        marginTop: '12px',
-                                        height: '6px',
-                                        background: 'rgba(255,255,255,0.1)',
-                                        borderRadius: '3px',
-                                        overflow: 'hidden'
-                                    }}>
-                                        <div style={{
-                                            width: `${Math.min((segment.count / totalCustomers) * 100 * 2, 100)}%`,
-                                            height: '100%',
-                                            background: SEGMENT_COLORS[segment.segment] || '#6b7280',
-                                            transition: 'width 0.5s ease'
-                                        }}></div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     {/* Segment Details */}
