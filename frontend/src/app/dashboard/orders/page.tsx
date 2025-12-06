@@ -28,6 +28,7 @@ interface RecentOrder {
 export default function OrdersPage() {
     const [ordersByDate, setOrdersByDate] = useState<OrderData[]>([]);
     const [recentOrders, setRecentOrders] = useState<RecentOrder[]>([]);
+    const [totalOrdersCount, setTotalOrdersCount] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
     const [dateRange, setDateRange] = useState({
         start: format(subDays(new Date(), 30), 'yyyy-MM-dd'),
@@ -41,13 +42,15 @@ export default function OrdersPage() {
     const loadData = async () => {
         setIsLoading(true);
         try {
-            const [ordersData, recentData] = await Promise.all([
+            const [ordersData, recentData, summary] = await Promise.all([
                 api.getOrdersByDate(dateRange.start, dateRange.end),
                 api.getRecentOrders(20),
+                api.getSummary(),
             ]);
 
             setOrdersByDate(ordersData);
             setRecentOrders(recentData);
+            setTotalOrdersCount(summary?.totals?.orders || 0);
         } catch (error) {
             console.error('Failed to load orders data:', error);
         } finally {
@@ -64,9 +67,9 @@ export default function OrdersPage() {
         }).format(value);
     };
 
-    const totalOrders = ordersByDate.reduce((sum, d) => sum + d.orders, 0);
+    const periodOrders = ordersByDate.reduce((sum, d) => sum + d.orders, 0);
     const totalRevenue = ordersByDate.reduce((sum, d) => sum + d.revenue, 0);
-    const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+    const avgOrderValue = periodOrders > 0 ? totalRevenue / periodOrders : 0;
 
     if (isLoading) {
         return (
@@ -99,10 +102,14 @@ export default function OrdersPage() {
             </div>
 
             {/* Summary Cards */}
-            <div className="grid grid-3" style={{ marginBottom: '32px' }}>
+            <div className="grid grid-4" style={{ marginBottom: '32px' }}>
+                <div className="card metric-card">
+                    <p className="metric-label">Total Orders</p>
+                    <p className="metric-value">{totalOrdersCount}</p>
+                </div>
                 <div className="card metric-card">
                     <p className="metric-label">Period Orders</p>
-                    <p className="metric-value">{totalOrders}</p>
+                    <p className="metric-value">{periodOrders}</p>
                 </div>
                 <div className="card metric-card">
                     <p className="metric-label">Period Revenue</p>
@@ -176,14 +183,14 @@ export default function OrdersPage() {
                                     <td>{order.customerName}</td>
                                     <td>
                                         <span className={`badge ${order.financialStatus === 'paid' ? 'badge-success' :
-                                                order.financialStatus === 'pending' ? 'badge-warning' : 'badge-error'
+                                            order.financialStatus === 'pending' ? 'badge-warning' : 'badge-error'
                                             }`}>
                                             {order.financialStatus}
                                         </span>
                                     </td>
                                     <td>
                                         <span className={`badge ${order.fulfillmentStatus === 'fulfilled' ? 'badge-success' :
-                                                order.fulfillmentStatus === 'partial' ? 'badge-warning' : 'badge-info'
+                                            order.fulfillmentStatus === 'partial' ? 'badge-warning' : 'badge-info'
                                             }`}>
                                             {order.fulfillmentStatus || 'unfulfilled'}
                                         </span>

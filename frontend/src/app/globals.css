@@ -5,37 +5,37 @@
   --color-bg-tertiary: #252542;
   --color-bg-card: rgba(26, 26, 46, 0.8);
   --color-bg-card-hover: rgba(37, 37, 66, 0.9);
-  
+
   --color-text-primary: #ffffff;
   --color-text-secondary: #a0a0b0;
   --color-text-muted: #6b6b80;
-  
+
   --color-accent-primary: #6366f1;
   --color-accent-secondary: #8b5cf6;
   --color-accent-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%);
-  
+
   --color-success: #10b981;
   --color-warning: #f59e0b;
   --color-error: #ef4444;
   --color-info: #3b82f6;
-  
+
   /* Borders */
   --border-color: rgba(255, 255, 255, 0.08);
   --border-radius-sm: 8px;
   --border-radius-md: 12px;
   --border-radius-lg: 16px;
   --border-radius-xl: 24px;
-  
+
   /* Shadows */
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
   --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.3);
   --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.4);
   --shadow-glow: 0 0 40px rgba(99, 102, 241, 0.2);
-  
+
   /* Typography */
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
-  
+
   /* Spacing */
   --space-xs: 4px;
   --space-sm: 8px;
@@ -43,7 +43,7 @@
   --space-lg: 24px;
   --space-xl: 32px;
   --space-2xl: 48px;
-  
+
   /* Transitions */
   --transition-fast: 150ms ease;
   --transition-normal: 250ms ease;
@@ -79,7 +79,7 @@ body::before {
   left: 0;
   width: 100%;
   height: 100%;
-  background: 
+  background:
     radial-gradient(ellipse at top left, rgba(99, 102, 241, 0.1) 0%, transparent 50%),
     radial-gradient(ellipse at bottom right, rgba(139, 92, 246, 0.1) 0%, transparent 50%);
   pointer-events: none;
@@ -101,7 +101,9 @@ button {
   cursor: pointer;
 }
 
-input, textarea, select {
+input,
+textarea,
+select {
   font-family: inherit;
 }
 
@@ -431,6 +433,7 @@ input, textarea, select {
 }
 
 @media (max-width: 768px) {
+
   .grid-2,
   .grid-3,
   .grid-4 {
@@ -650,6 +653,7 @@ input, textarea, select {
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -687,12 +691,12 @@ input, textarea, select {
     width: 80px;
     padding: var(--space-md);
   }
-  
+
   .sidebar-logo h1,
   .nav-item span {
     display: none;
   }
-  
+
   .main-content {
     margin-left: 80px;
   }
@@ -702,15 +706,81 @@ input, textarea, select {
   .sidebar {
     display: none;
   }
-  
+
   .main-content {
     margin-left: 0;
     padding: var(--space-md);
   }
-  
+
   .page-header {
     flex-direction: column;
     align-items: flex-start;
     gap: var(--space-md);
   }
+}
+
+/* ===== Light Mode ===== */
+body.light-mode {
+  --color-bg-primary: #f8fafc;
+  --color-bg-secondary: #ffffff;
+  --color-bg-tertiary: #f1f5f9;
+  --color-bg-card: rgba(255, 255, 255, 0.9);
+  --color-bg-card-hover: rgba(241, 245, 249, 0.95);
+
+  --color-text-primary: #1e293b;
+  --color-text-secondary: #64748b;
+  --color-text-muted: #94a3b8;
+
+  --border-color: rgba(0, 0, 0, 0.08);
+
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.12);
+  --shadow-glow: 0 0 40px rgba(99, 102, 241, 0.15);
+}
+
+body.light-mode::before {
+  background:
+    radial-gradient(ellipse at top left, rgba(99, 102, 241, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at bottom right, rgba(139, 92, 246, 0.08) 0%, transparent 50%);
+}
+
+body.light-mode .sidebar {
+  background: var(--color-bg-secondary);
+  border-color: var(--border-color);
+}
+
+body.light-mode .table th {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+body.light-mode .table tbody tr:hover {
+  background: rgba(99, 102, 241, 0.05);
+}
+
+body.light-mode .nav-item:hover {
+  background: rgba(99, 102, 241, 0.08);
+}
+
+body.light-mode .nav-item.active {
+  background: rgba(99, 102, 241, 0.12);
+}
+
+body.light-mode .metric-value {
+  background: var(--color-accent-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+body.light-mode ::-webkit-scrollbar-track {
+  background: var(--color-bg-tertiary);
+}
+
+body.light-mode ::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+}
+
+body.light-mode ::-webkit-scrollbar-thumb:hover {
+  background: var(--color-accent-primary);
 }

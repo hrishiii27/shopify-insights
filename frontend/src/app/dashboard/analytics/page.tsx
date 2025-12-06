@@ -144,9 +144,9 @@ export default function AnalyticsPage() {
                                 <p style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>Weekly Growth</p>
                                 <p style={{
                                     fontWeight: '600',
-                                    color: forecastData.weeklyGrowth >= 0 ? 'var(--color-success)' : 'var(--color-error)'
+                                    color: (forecastData.weeklyGrowth ?? 0) >= 0 ? 'var(--color-success)' : 'var(--color-error)'
                                 }}>
-                                    {forecastData.weeklyGrowth >= 0 ? '+' : ''}{forecastData.weeklyGrowth.toFixed(1)}%
+                                    {(forecastData.weeklyGrowth ?? 0) >= 0 ? '+' : ''}{(forecastData.weeklyGrowth ?? 0).toFixed(1)}%
                                 </p>
                             </div>
                             <div style={{ textAlign: 'right' }}>

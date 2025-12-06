@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, ReactNode } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { AuthProvider, useAuth } from '@/context/AuthContext';
 
@@ -12,6 +12,35 @@ interface DashboardLayoutProps {
 function DashboardLayoutContent({ children }: DashboardLayoutProps) {
     const { user, tenant, isLoading, logout } = useAuth();
     const router = useRouter();
+    const pathname = usePathname();
+    const [isDarkMode, setIsDarkMode] = useState(true);
+
+    useEffect(() => {
+        // Load theme preference from localStorage
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'light') {
+            setIsDarkMode(false);
+            document.body.classList.add('light-mode');
+        }
+    }, []);
+
+    const toggleTheme = () => {
+        setIsDarkMode(!isDarkMode);
+        if (isDarkMode) {
+            document.body.classList.add('light-mode');
+            localStorage.setItem('theme', 'light');
+        } else {
+            document.body.classList.remove('light-mode');
+            localStorage.setItem('theme', 'dark');
+        }
+    };
+
+    const isActive = (path: string) => {
+        if (path === '/dashboard') {
+            return pathname === '/dashboard';
+        }
+        return pathname.startsWith(path);
+    };
 
     useEffect(() => {
         if (!isLoading && !user) {
@@ -51,7 +80,7 @@ function DashboardLayoutContent({ children }: DashboardLayoutProps) {
                 </div>
 
                 <nav className="sidebar-nav">
-                    <Link href="/dashboard" className="nav-item active">
+                    <Link href="/dashboard" className={`nav-item ${isActive('/dashboard') ? 'active' : ''}`}>
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <rect x="3" y="3" width="7" height="7" rx="1" />
                             <rect x="14" y="3" width="7" height="7" rx="1" />
@@ -60,7 +89,7 @@ function DashboardLayoutContent({ children }: DashboardLayoutProps) {
                         </svg>
                         <span>Dashboard</span>
                     </Link>
-                    <Link href="/dashboard/orders" className="nav-item">
+                    <Link href="/dashboard/orders" className={`nav-item ${isActive('/dashboard/orders') ? 'active' : ''}`}>
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
                             <line x1="3" y1="6" x2="21" y2="6" />
@@ -68,7 +97,7 @@ function DashboardLayoutContent({ children }: DashboardLayoutProps) {
                         </svg>
                         <span>Orders</span>
                     </Link>
-                    <Link href="/dashboard/customers" className="nav-item">
+                    <Link href="/dashboard/customers" className={`nav-item ${isActive('/dashboard/customers') ? 'active' : ''}`}>
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
                             <circle cx="9" cy="7" r="4" />
@@ -77,7 +106,7 @@ function DashboardLayoutContent({ children }: DashboardLayoutProps) {
                         </svg>
                         <span>Customers</span>
                     </Link>
-                    <Link href="/dashboard/products" className="nav-item">
+                    <Link href="/dashboard/products" className={`nav-item ${isActive('/dashboard/products') ? 'active' : ''}`}>
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
                             <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
@@ -85,14 +114,14 @@ function DashboardLayoutContent({ children }: DashboardLayoutProps) {
                         </svg>
                         <span>Products</span>
                     </Link>
-                    <Link href="/dashboard/analytics" className="nav-item">
+                    <Link href="/dashboard/analytics" className={`nav-item ${isActive('/dashboard/analytics') ? 'active' : ''}`}>
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <path d="M21.21 15.89A10 10 0 1 1 8 2.83" />
                             <path d="M22 12A10 10 0 0 0 12 2v10z" />
                         </svg>
                         <span>Analytics</span>
                     </Link>
-                    <Link href="/dashboard/settings" className="nav-item">
+                    <Link href="/dashboard/settings" className={`nav-item ${isActive('/dashboard/settings') ? 'active' : ''}`}>
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <circle cx="12" cy="12" r="3" />
                             <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
@@ -100,6 +129,40 @@ function DashboardLayoutContent({ children }: DashboardLayoutProps) {
                         <span>Settings</span>
                     </Link>
                 </nav>
+
+                {/* Theme Toggle */}
+                <button
+                    onClick={toggleTheme}
+                    className="btn btn-ghost"
+                    style={{
+                        marginTop: '16px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        width: '100%',
+                        justifyContent: 'flex-start',
+                        padding: '12px 16px'
+                    }}
+                >
+                    {isDarkMode ? (
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <circle cx="12" cy="12" r="5" />
+                            <line x1="12" y1="1" x2="12" y2="3" />
+                            <line x1="12" y1="21" x2="12" y2="23" />
+                            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                            <line x1="1" y1="12" x2="3" y2="12" />
+                            <line x1="21" y1="12" x2="23" y2="12" />
+                            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+                        </svg>
+                    ) : (
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                        </svg>
+                    )}
+                    <span>{isDarkMode ? 'Light Mode' : 'Dark Mode'}</span>
+                </button>
 
                 <div style={{ marginTop: 'auto', paddingTop: '24px', borderTop: '1px solid var(--border-color)' }}>
                     <div style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginBottom: '8px' }}>
