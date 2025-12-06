@@ -37,7 +37,10 @@ async function syncCustomers(tenantId: string, config: ShopifyConfig): Promise<n
     let pageInfo: string | undefined;
 
     do {
-        const params: Record<string, string> = { limit: '250' };
+        const params: Record<string, string> = {
+            limit: '250',
+            fields: 'id,email,first_name,last_name,default_address,phone,tags,total_spent,orders_count,created_at'
+        };
         if (pageInfo) {
             params.page_info = pageInfo;
         }
@@ -46,6 +49,8 @@ async function syncCustomers(tenantId: string, config: ShopifyConfig): Promise<n
         const customers = response.customers || [];
 
         for (const customer of customers) {
+            const { firstName, lastName } = resolveCustomerName(customer);
+
             await prisma.customer.upsert({
                 where: {
                     tenantId_shopifyId: {
@@ -55,9 +60,9 @@ async function syncCustomers(tenantId: string, config: ShopifyConfig): Promise<n
                 },
                 update: {
                     email: customer.email,
-                    firstName: customer.first_name,
-                    lastName: customer.last_name,
-                    phone: customer.phone,
+                    firstName: firstName,
+                    lastName: lastName,
+                    phone: customer.phone || customer.default_address?.phone,
                     tags: customer.tags,
                     totalSpent: parseFloat(customer.total_spent || '0'),
                     ordersCount: customer.orders_count || 0,
@@ -67,9 +72,9 @@ async function syncCustomers(tenantId: string, config: ShopifyConfig): Promise<n
                     tenantId,
                     shopifyId: String(customer.id),
                     email: customer.email,
-                    firstName: customer.first_name,
-                    lastName: customer.last_name,
-                    phone: customer.phone,
+                    firstName: firstName,
+                    lastName: lastName,
+                    phone: customer.phone || customer.default_address?.phone,
                     tags: customer.tags,
                     totalSpent: parseFloat(customer.total_spent || '0'),
                     ordersCount: customer.orders_count || 0,
@@ -85,6 +90,31 @@ async function syncCustomers(tenantId: string, config: ShopifyConfig): Promise<n
     } while (pageInfo);
 
     return count;
+}
+
+// Helper to resolve customer name from various fields
+function resolveCustomerName(c: any): { firstName: string | undefined, lastName: string | undefined } {
+    if (c.first_name || c.last_name) return { firstName: c.first_name, lastName: c.last_name };
+
+    if (c.default_address) {
+        if (c.default_address.first_name || c.default_address.last_name) {
+            return { firstName: c.default_address.first_name, lastName: c.default_address.last_name };
+        }
+        if (c.default_address.name) {
+            const parts = c.default_address.name.split(' ');
+            return { firstName: parts[0], lastName: parts.slice(1).join(' ') };
+        }
+    }
+
+    // Fallback to parsing email if no name exists
+    if (c.email) {
+        const namePart = c.email.split('@')[0];
+        // Capitalize first letter
+        const firstName = namePart.charAt(0).toUpperCase() + namePart.slice(1);
+        return { firstName, lastName: undefined };
+    }
+
+    return { firstName: undefined, lastName: undefined };
 }
 
 // Sync orders from Shopify
@@ -103,6 +133,8 @@ async function syncOrders(tenantId: string, config: ShopifyConfig): Promise<numb
         if (order.customer?.id) {
             // Upsert customer with data from the order
             const customerData = order.customer;
+            const { firstName, lastName } = resolveCustomerName(customerData);
+
             const upsertedCustomer = await prisma.customer.upsert({
                 where: {
                     tenantId_shopifyId: {
@@ -112,8 +144,8 @@ async function syncOrders(tenantId: string, config: ShopifyConfig): Promise<numb
                 },
                 update: {
                     email: customerData.email || undefined,
-                    firstName: customerData.first_name || customerData.default_address?.first_name || undefined,
-                    lastName: customerData.last_name || customerData.default_address?.last_name || undefined,
+                    firstName: firstName,
+                    lastName: lastName,
                     phone: customerData.phone || customerData.default_address?.phone || undefined,
                     updatedAt: new Date(),
                 },
@@ -121,8 +153,8 @@ async function syncOrders(tenantId: string, config: ShopifyConfig): Promise<numb
                     tenantId,
                     shopifyId: String(customerData.id),
                     email: customerData.email,
-                    firstName: customerData.first_name || customerData.default_address?.first_name,
-                    lastName: customerData.last_name || customerData.default_address?.last_name,
+                    firstName: firstName,
+                    lastName: lastName,
                     phone: customerData.phone || customerData.default_address?.phone,
                     totalSpent: 0,
                     ordersCount: 0,
