@@ -209,6 +209,7 @@ export default function SettingsPage() {
                                 <th>Type</th>
                                 <th>Status</th>
                                 <th>Items</th>
+                                <th>Error</th>
                                 <th>Started</th>
                                 <th>Completed</th>
                             </tr>
@@ -226,6 +227,9 @@ export default function SettingsPage() {
                                         </span>
                                     </td>
                                     <td>{log.itemCount}</td>
+                                    <td style={{ fontSize: '12px', color: 'var(--color-error)', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                        {log.error || '-'}
+                                    </td>
                                     <td style={{ fontSize: '14px', color: 'var(--color-text-secondary)' }}>
                                         {formatDate(log.startedAt)}
                                     </td>
@@ -236,7 +240,7 @@ export default function SettingsPage() {
                             ))}
                             {(!syncStatus?.recentLogs || syncStatus.recentLogs.length === 0) && (
                                 <tr>
-                                    <td colSpan={5} style={{ textAlign: 'center', color: 'var(--color-text-muted)' }}>
+                                    <td colSpan={6} style={{ textAlign: 'center', color: 'var(--color-text-muted)' }}>
                                         No sync logs yet
                                     </td>
                                 </tr>
